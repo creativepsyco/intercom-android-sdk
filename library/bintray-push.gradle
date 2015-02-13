@@ -1,0 +1,96 @@
+apply plugin: 'maven'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+
+group = GROUP
+version = VERSION_NAME
+status = getStatus()
+
+def getStatus() {
+    if (VERSION_NAME.contains("-SNAPSHOT"))
+        return "integration"
+    else
+        return "release"
+}
+
+bintray {
+    user = BINTRAY_USER
+    key = BINTRAY_API_KEY
+
+    configurations = ['archives'] //When uploading configuration files
+
+    pkg {
+        repo = 'maven'
+        userOrg = 'piethis'
+        name = POM_NAME
+        desc = POM_DESCRIPTION
+        websiteUrl = POM_URL
+        issueTrackerUrl = POM_SCM_URL
+        vcsUrl = POM_SCM_URL
+        licenses = [POM_LICENCE_NAME]
+        labels = ['aar', 'android', 'intercom']
+        publicDownloadNumbers = true
+        version {
+            name = VERSION_NAME
+            desc = POM_DESCRIPTION
+        }
+    }
+}
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            groupId = GROUP
+            artifactId = POM_ARTIFACT_ID
+            version = VERSION_NAME
+            
+            project {
+                packaging POM_PACKAGING
+                name POM_NAME
+                url POM_URL
+                licenses {
+                    license {
+                        name POM_LICENCE_NAME
+                        url POM_LICENCE_URL
+                        distribution POM_LICENCE_DIST
+                    }
+                }
+                developers {
+                    developer {
+                        id POM_DEVELOPER_ID
+                        name POM_DEVELOPER_NAME
+                    }
+                }
+                scm {
+                    url POM_SCM_URL
+                    connection POM_SCM_CONNECTION
+                    developerConnection POM_SCM_DEV_CONNECTION
+                }
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+task findConventions << {
+    println project.getConvention()
+}
