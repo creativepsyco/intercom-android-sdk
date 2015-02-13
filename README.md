@@ -7,11 +7,13 @@ Implements a very minimal subset of Intercom APIs generated on the model of the 
 ##Integrating
 
 * Put the following in your `local.properties` file:
+
   ```bash
   intercom.appId="YOUR_INTERCOM_APP_ID"
   intercom.apiKey="YOUR_INTERCOM_API_KEY"
   ```
 * Put the following lines in `build.gradle` of your app:
+
   ```java
   compile 'com.piethis.intercom:intercom:0.1'
   ```
