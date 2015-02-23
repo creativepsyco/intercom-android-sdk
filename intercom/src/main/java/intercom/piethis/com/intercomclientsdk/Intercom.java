@@ -1,5 +1,8 @@
 package intercom.piethis.com.intercomclientsdk;
 
+import android.content.Context;
+
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import intercom.piethis.com.intercomclientsdk.internal.IntercomClient;
@@ -7,6 +10,7 @@ import intercom.piethis.com.intercomclientsdk.protocol.Company;
 import intercom.piethis.com.intercomclientsdk.protocol.User;
 import intercom.piethis.com.intercomclientsdk.protocol.UserListReponse;
 import intercom.piethis.com.intercomclientsdk.protocol.UserRequest;
+import intercom.piethis.com.intercomclientsdk.utils.VersionUtils;
 import retrofit.Callback;
 
 /**
@@ -18,12 +22,21 @@ public class Intercom {
 
   private final String API_KEY;
 
-  private final IntercomClient intercomClient;
+  private IntercomClient intercomClient;
 
-  public Intercom(IntercomConfig config) {
+  public static Context getApplicationContext() {
+    if (applicationContext != null)
+      return applicationContext.get();
+    return null;
+  }
+
+  private static WeakReference<Context> applicationContext;
+
+  public Intercom(IntercomConfig config, Context context) {
     this.API_KEY = config.getAppKey();
     this.APP_ID = config.getAppId();
     this.intercomClient = new IntercomClient(this);
+    applicationContext = new WeakReference<>(context.getApplicationContext());
   }
 
   public String getAPP_ID() {
@@ -43,7 +56,7 @@ public class Intercom {
     user.newSession = true;
     user.updateLastSeen = true;
     user.userId = userId;
-    user.lastSeenUserAgent = System.getProperty("http.agent");
+    user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
     this.intercomClient.getUserService().createNewSession(user, callback);
   }
 
@@ -54,21 +67,21 @@ public class Intercom {
     user.userId = userId;
     user.name = name;
     user.email = email;
-    user.lastSeenUserAgent = System.getProperty("http.agent");
+    user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
     user.companies = new ArrayList<>();
     user.companies.add(company);
     this.intercomClient.getUserService().createNewSession(user, callback);
   }
 
   public void updateUser(UserRequest user, Callback<User> callback) {
-    user.lastSeenUserAgent = System.getProperty("http.agent");
+    user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
     user.newSession = true;
     user.updateLastSeen = true;
     this.intercomClient.getUserService().createNewSession(user, callback);
   }
 
   public void newUserSignedUp(UserRequest user, Callback<User> callback) {
-    user.lastSeenUserAgent = System.getProperty("http.agent");
+    user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
     user.newSession = true;
     user.updateLastSeen = true;
     user.signUpTime = System.currentTimeMillis() / 1000L;

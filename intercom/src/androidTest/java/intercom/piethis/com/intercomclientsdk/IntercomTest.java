@@ -38,7 +38,7 @@ public class IntercomTest extends AndroidTestCase {
     config = new IntercomConfig();
     config.setAppId(BuildConfig.AppId);
     config.setAppKey(BuildConfig.AppKey);
-    intercom = new Intercom(config);
+    intercom = new Intercom(config, getContext());
   }
 
   public void testIntercomGetUsers() throws Exception {
