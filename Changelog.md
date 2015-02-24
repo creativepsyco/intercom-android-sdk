@@ -1,3 +1,7 @@
+Version 0.2.3
+-------------
+* Add Custom attributes for app version and android version
+
 Version 0.2.2
 -------------
 * Add external IP for providing location data.
