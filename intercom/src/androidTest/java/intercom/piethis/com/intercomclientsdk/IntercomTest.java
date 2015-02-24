@@ -36,7 +36,7 @@ public class IntercomTest extends AndroidTestCase {
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    userId = String.valueOf(new Random().nextInt());
+    userId = String.valueOf(Math.abs(new Random().nextInt()));
     randomEmail = new BigInteger(130, random).toString(32) + "@piethis.com";
 
     config = new IntercomConfig();

@@ -41,4 +41,7 @@ public class UserRequest {
 
   @SerializedName("companies")
   public List<Company> companies;
+
+  @SerializedName("last_seen_ip")
+  public String lastSeenIPAddress;
 }

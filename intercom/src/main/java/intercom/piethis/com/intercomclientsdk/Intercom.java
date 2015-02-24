@@ -11,6 +11,7 @@ import intercom.piethis.com.intercomclientsdk.protocol.Company;
 import intercom.piethis.com.intercomclientsdk.protocol.User;
 import intercom.piethis.com.intercomclientsdk.protocol.UserListReponse;
 import intercom.piethis.com.intercomclientsdk.protocol.UserRequest;
+import intercom.piethis.com.intercomclientsdk.utils.NetworkUtils;
 import intercom.piethis.com.intercomclientsdk.utils.VersionUtils;
 import retrofit.Callback;
 
@@ -58,6 +59,7 @@ public class Intercom {
     user.updateLastSeen = true;
     user.userId = userId;
     user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
+    user.lastSeenIPAddress = NetworkUtils.getExternalIP();
     this.intercomClient.getUserService().createNewSession(user, callback);
   }
 
@@ -71,12 +73,14 @@ public class Intercom {
     user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
     user.companies = new ArrayList<>();
     user.companies.add(company);
+    user.lastSeenIPAddress = NetworkUtils.getExternalIP();
     this.intercomClient.getUserService().createNewSession(user, callback);
   }
 
   public void updateUser(UserRequest user, Callback<User> callback) {
     user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
     user.newSession = true;
+    user.lastSeenIPAddress = NetworkUtils.getExternalIP();
     user.updateLastSeen = true;
     this.intercomClient.getUserService().createNewSession(user, callback);
   }
@@ -84,6 +88,7 @@ public class Intercom {
   public void newUserSignedUp(UserRequest user, Callback<User> callback) {
     user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
     user.newSession = true;
+    user.lastSeenIPAddress = NetworkUtils.getExternalIP();
     user.updateLastSeen = true;
     user.signUpTime = System.currentTimeMillis() / 1000L;
     this.intercomClient.getUserService().createNewSession(user, callback);

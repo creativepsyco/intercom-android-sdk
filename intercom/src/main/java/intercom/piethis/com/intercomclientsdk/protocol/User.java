@@ -36,4 +36,7 @@ public class User {
 
   @SerializedName("companies")
   public CompanyList companies;
+
+  @SerializedName("last_seen_ip")
+  public String lastSeenIPAddress;
 }
