@@ -2,7 +2,10 @@ package intercom.piethis.com.intercomclientsdk.protocol;
 
 import com.google.gson.annotations.SerializedName;
 
+import org.json.JSONObject;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * User: msk
@@ -44,4 +47,7 @@ public class UserRequest {
 
   @SerializedName("last_seen_ip")
   public String lastSeenIPAddress;
+
+  @SerializedName("custom_attributes")
+  public CustomAttributes customAttributes;
 }

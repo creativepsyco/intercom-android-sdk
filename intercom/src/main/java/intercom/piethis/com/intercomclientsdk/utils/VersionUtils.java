@@ -7,6 +7,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import java.lang.reflect.Constructor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import intercom.piethis.com.intercomclientsdk.Intercom;
 
@@ -16,6 +18,8 @@ import intercom.piethis.com.intercomclientsdk.Intercom;
  */
 public class VersionUtils {
   private static String versionString;
+
+  private static Pattern PATTERN = Pattern.compile("Android (\\d+(?:\\.\\d+)+)");
 
   private VersionUtils() {
   }
@@ -52,5 +56,15 @@ public class VersionUtils {
     } catch (Exception e) {
       return System.getProperty("http.agent");
     }
+  }
+
+
+  public static String getAndroidVersion() {
+    String userAgentString = getWebSettingsUserAgent();
+    Matcher matcher = PATTERN.matcher(userAgentString);
+    if (matcher.find()) {
+      return matcher.group(0);
+    }
+    return "";
   }
 }

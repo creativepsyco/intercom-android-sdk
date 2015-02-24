@@ -2,6 +2,8 @@ package intercom.piethis.com.intercomclientsdk.protocol;
 
 import com.google.gson.annotations.SerializedName;
 
+import org.json.JSONObject;
+
 /**
  * User: msk
  * Date: 12/02/2015
@@ -39,4 +41,7 @@ public class User {
 
   @SerializedName("last_seen_ip")
   public String lastSeenIPAddress;
+
+  @SerializedName("custom_attributes")
+  public CustomAttributes customAttributes;
 }

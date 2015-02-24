@@ -8,10 +8,8 @@ import java.security.SecureRandom;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
-import intercom.piethis.com.intercomclientsdk.protocol.Company;
-import intercom.piethis.com.intercomclientsdk.protocol.User;
-import intercom.piethis.com.intercomclientsdk.protocol.UserListReponse;
-import intercom.piethis.com.intercomclientsdk.protocol.UserRequest;
+import intercom.piethis.com.intercomclientsdk.protocol.*;
+import intercom.piethis.com.intercomclientsdk.utils.VersionUtils;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -94,12 +92,16 @@ public class IntercomTest extends AndroidTestCase {
     Company company = new Company();
     company.companyId = "1";
     company.name = "Piethis Pte. Ltd";
-    intercom.updateUser(userId, randomEmail, "Deep Singh", company, new Callback<User>() {
+    CustomAttributes customAttributes = new CustomAttributes();
+    customAttributes.androidVersion = VersionUtils.getAndroidVersion();
+    intercom.updateUser(userId, randomEmail, "Deep Singh", company, customAttributes, new Callback<User>() {
       @Override
       public void success(User user, Response response) {
         signal.countDown();
         assertEquals("Name not same", user.name, "Deep Singh");
         assertEquals("Email not same", user.email, randomEmail);
+        assertEquals("Version", user.customAttributes.androidVersion, VersionUtils.getAndroidVersion());
+
         assertNotNull(user.companies);
         assertNotNull(user.companies.companies);
         assertTrue(user.companies.companies.size() > 0);

@@ -3,14 +3,13 @@ package intercom.piethis.com.intercomclientsdk;
 import android.content.Context;
 import android.text.TextUtils;
 
+import org.json.JSONException;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import intercom.piethis.com.intercomclientsdk.internal.IntercomClient;
-import intercom.piethis.com.intercomclientsdk.protocol.Company;
-import intercom.piethis.com.intercomclientsdk.protocol.User;
-import intercom.piethis.com.intercomclientsdk.protocol.UserListReponse;
-import intercom.piethis.com.intercomclientsdk.protocol.UserRequest;
+import intercom.piethis.com.intercomclientsdk.protocol.*;
 import intercom.piethis.com.intercomclientsdk.utils.NetworkUtils;
 import intercom.piethis.com.intercomclientsdk.utils.VersionUtils;
 import retrofit.Callback;
@@ -56,42 +55,38 @@ public class Intercom {
   public void beginNewSession(String userId, Callback<User> callback) {
     UserRequest user = new UserRequest();
     user.newSession = true;
-    user.updateLastSeen = true;
     user.userId = userId;
-    user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
-    user.lastSeenIPAddress = NetworkUtils.getExternalIP();
-    this.intercomClient.getUserService().createNewSession(user, callback);
+    updateUser(user, callback);
   }
 
-  public void updateUser(String userId, String email, String name, Company company, Callback<User> callback) {
+  public void updateUser(String userId, String email, String name, Company company, CustomAttributes customAttrs, Callback<User> callback) throws JSONException {
     UserRequest user = new UserRequest();
     user.newSession = true;
-    user.updateLastSeen = true;
     user.userId = userId;
     user.name = name;
     user.email = email;
-    user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
     user.companies = new ArrayList<>();
     user.companies.add(company);
     user.lastSeenIPAddress = NetworkUtils.getExternalIP();
-    this.intercomClient.getUserService().createNewSession(user, callback);
+    user.customAttributes = customAttrs;
+    updateUser(user, callback);
   }
 
   public void updateUser(UserRequest user, Callback<User> callback) {
-    user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
     user.newSession = true;
     user.lastSeenIPAddress = NetworkUtils.getExternalIP();
     user.updateLastSeen = true;
+    if (user.customAttributes == null) {
+      user.customAttributes = new CustomAttributes();
+    }
+    user.customAttributes.androidVersion = VersionUtils.getAndroidVersion();
     this.intercomClient.getUserService().createNewSession(user, callback);
   }
 
   public void newUserSignedUp(UserRequest user, Callback<User> callback) {
-    user.lastSeenUserAgent = VersionUtils.sanitizeVersionString();
     user.newSession = true;
-    user.lastSeenIPAddress = NetworkUtils.getExternalIP();
-    user.updateLastSeen = true;
     user.signUpTime = System.currentTimeMillis() / 1000L;
-    this.intercomClient.getUserService().createNewSession(user, callback);
+    updateUser(user, callback);
   }
 
   public void deleteUser(UserRequest user, Callback<User> callback) {
