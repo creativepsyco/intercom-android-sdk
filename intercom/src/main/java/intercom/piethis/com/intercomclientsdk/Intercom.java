@@ -1,6 +1,7 @@
 package intercom.piethis.com.intercomclientsdk;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -86,5 +87,16 @@ public class Intercom {
     user.updateLastSeen = true;
     user.signUpTime = System.currentTimeMillis() / 1000L;
     this.intercomClient.getUserService().createNewSession(user, callback);
+  }
+
+  public void deleteUser(UserRequest user, Callback<User> callback) {
+    if (TextUtils.isEmpty(user.email) && TextUtils.isEmpty(user.userId)) {
+      throw new IllegalArgumentException("Email and userId cannot be both empty.");
+    }
+    if (TextUtils.isEmpty(user.email)) {
+      this.intercomClient.getUserService().deleteUserByUserId(user.userId, callback);
+    } else {
+      this.intercomClient.getUserService().deleteUserByEmail(user.email, callback);
+    }
   }
 }

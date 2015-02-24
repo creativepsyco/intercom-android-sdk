@@ -4,9 +4,7 @@ import intercom.piethis.com.intercomclientsdk.protocol.User;
 import intercom.piethis.com.intercomclientsdk.protocol.UserListReponse;
 import intercom.piethis.com.intercomclientsdk.protocol.UserRequest;
 import retrofit.Callback;
-import retrofit.http.Body;
-import retrofit.http.GET;
-import retrofit.http.POST;
+import retrofit.http.*;
 
 /**
  * User: msk
@@ -19,4 +17,10 @@ public interface Users {
 
   @POST("/users")
   public void createNewSession(@Body UserRequest user, Callback<User> callback);
+
+  @DELETE("/users")
+  public void deleteUserByEmail(@Query("email") String email, Callback<User> callback);
+
+  @DELETE("/users")
+  public void deleteUserByUserId(@Query("user_id") String userId, Callback<User> callback);
 }
