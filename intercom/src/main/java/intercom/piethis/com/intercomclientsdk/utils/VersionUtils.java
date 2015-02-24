@@ -1,6 +1,7 @@
 package intercom.piethis.com.intercomclientsdk.utils;
 
 import android.content.Context;
+import android.os.Build;
 import android.text.TextUtils;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -31,8 +32,15 @@ public class VersionUtils {
     return versionString;
   }
 
+  /**
+   * Returns a user-agent string. Returns either the U-A used by the web view settings or the
+   * default http.agent system property.
+   */
   public static String getWebSettingsUserAgent() {
     try {
+      if (Build.VERSION.SDK_INT >= 17) {
+        return WebSettings.getDefaultUserAgent(Intercom.getApplicationContext());
+      }
       Constructor<WebSettings> constructor = WebSettings.class.getDeclaredConstructor(Context.class, WebView.class);
       constructor.setAccessible(true);
       try {
