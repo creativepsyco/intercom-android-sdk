@@ -13,7 +13,7 @@ public class AppConstants {
     AppConstants.externalIPHostUr = externalIPHostUr;
   }
 
-  private static String externalIPHostUr;
+  private static String externalIPHostUr = "https://api.pie.co/v2/info";
 
   public static String getExternalIPHostUrl() {
     return externalIPHostUr;

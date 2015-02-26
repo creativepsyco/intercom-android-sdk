@@ -9,6 +9,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -64,9 +65,15 @@ public class NetworkUtils {
    * @return a String composed of the IP
    */
   public static String getExternalIP() {
-    String useurl = TextUtils.isEmpty(AppConstants.getExternalIPHostUrl())
-        ? "http://ipinfo.io/ip"
-        : AppConstants.getExternalIPHostUrl();
+    if (!TextUtils.isEmpty(AppConstants.getExternalIPHostUrl())) {
+      return getIPAddressFromPie();
+    }
+    return getLegacyIP();
+  }
+
+
+  private static String getLegacyIP() {
+    String useurl = "http://ipinfo.io/ip";
     try {
       HttpClient httpclient = new DefaultHttpClient();
       HttpGet httpget = new HttpGet(useurl);
@@ -81,6 +88,30 @@ public class NetworkUtils {
         }
       }
     } catch (Exception ignored) {
+    }
+
+    return "";
+  }
+
+  private static String getIPAddressFromPie() {
+    String useurl = AppConstants.getExternalIPHostUrl();
+    try {
+      HttpClient httpclient = new DefaultHttpClient();
+      HttpGet httpget = new HttpGet(useurl);
+      HttpResponse response;
+
+      response = httpclient.execute(httpget);
+      HttpEntity entity = response.getEntity();
+      if (entity != null) {
+        long len = entity.getContentLength();
+        if (len != -1 && len < 1024) {
+          String rep = EntityUtils.toString(entity);
+          JSONObject jsonObject = new JSONObject(rep);
+          return jsonObject.getJSONArray("ips").getString(0);
+        }
+      }
+    } catch (Exception ignored) {
+      return getLegacyIP();
     }
 
     return "";
