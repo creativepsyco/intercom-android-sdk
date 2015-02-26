@@ -1,3 +1,14 @@
+Changelog
+=========
+
+Version 0.3.1
+-------------
+* Use Pie's API to find the correct external IP Address of the client.
+
+Version 0.3.0
+-------------
+* Use a separate thread for finding out client External IP Address.
+
 Version 0.2.4
 -------------
 * Change web address of where the client gets the external IP
