@@ -1,18 +1,25 @@
 package intercom.piethis.com.intercomclientsdk;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import org.json.JSONException;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import intercom.piethis.com.intercomclientsdk.internal.IntercomClient;
 import intercom.piethis.com.intercomclientsdk.protocol.*;
 import intercom.piethis.com.intercomclientsdk.utils.NetworkUtils;
-import intercom.piethis.com.intercomclientsdk.utils.VersionUtils;
 import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+import timber.log.Timber;
 
 /**
  * User: msk
@@ -22,6 +29,8 @@ public class Intercom {
   private final String APP_ID;
 
   private final String API_KEY;
+
+  private final RequestDispatcher requestDispatcher;
 
   private IntercomClient intercomClient;
 
@@ -36,7 +45,9 @@ public class Intercom {
   public Intercom(IntercomConfig config, Context context) {
     this.API_KEY = config.getAppKey();
     this.APP_ID = config.getAppId();
+    Timber.plant(new Timber.DebugTree());
     this.intercomClient = new IntercomClient(this);
+    this.requestDispatcher = new RequestDispatcher(this, this.intercomClient);
     applicationContext = new WeakReference<>(context.getApplicationContext());
   }
 
@@ -52,14 +63,25 @@ public class Intercom {
     this.intercomClient.getUserService().getUsers(callback);
   }
 
+  Map<String, WeakReference<Callback<?>>> callbackMap = new ConcurrentHashMap<>();
+
   public void beginNewSession(String userId, Callback<User> callback) {
     UserRequest user = new UserRequest();
     user.newSession = true;
     user.userId = userId;
-    updateUser(user, callback);
+    registerCallback(user, callback);
+    this.requestDispatcher.dispatchUpdate(user);
   }
 
-  public void updateUser(String userId, String email, String name, Company company, CustomAttributes customAttrs, Callback<User> callback) throws JSONException {
+  void registerCallback(UserRequest user, Callback<User> callback) {
+    String requestId = UUID.randomUUID().toString();
+    user.requestId = requestId;
+    callbackMap.put(requestId, new WeakReference<Callback<?>>(callback));
+  }
+
+  public void updateUser(String userId, String email, String name, Company company,
+                         CustomAttributes customAttrs,
+                         Callback<User> callback) throws JSONException {
     UserRequest user = new UserRequest();
     user.newSession = true;
     user.userId = userId;
@@ -69,24 +91,15 @@ public class Intercom {
     user.companies.add(company);
     user.lastSeenIPAddress = NetworkUtils.getExternalIP();
     user.customAttributes = customAttrs;
-    updateUser(user, callback);
-  }
-
-  public void updateUser(UserRequest user, Callback<User> callback) {
-    user.newSession = true;
-    user.lastSeenIPAddress = NetworkUtils.getExternalIP();
-    user.updateLastSeen = true;
-    if (user.customAttributes == null) {
-      user.customAttributes = new CustomAttributes();
-    }
-    user.customAttributes.androidVersion = VersionUtils.getAndroidVersion();
-    this.intercomClient.getUserService().createNewSession(user, callback);
+    registerCallback(user, callback);
+    this.requestDispatcher.dispatchUpdate(user);
   }
 
   public void newUserSignedUp(UserRequest user, Callback<User> callback) {
     user.newSession = true;
     user.signUpTime = System.currentTimeMillis() / 1000L;
-    updateUser(user, callback);
+    registerCallback(user, callback);
+    this.requestDispatcher.dispatchUpdate(user);
   }
 
   public void deleteUser(UserRequest user, Callback<User> callback) {
@@ -98,5 +111,43 @@ public class Intercom {
     } else {
       this.intercomClient.getUserService().deleteUserByEmail(user.email, callback);
     }
+  }
+
+  public <T> void dispatchCallback(final String requestId, final Response rawResponse, final T typedResponse, final Exception... args) {
+    if (!callbackMap.containsKey(requestId) || callbackMap.get(requestId).get() == null) {
+      /**
+       * Clean up the key from the callback map
+       */
+      if (callbackMap.containsKey(requestId)) {
+        callbackMap.remove(requestId);
+      }
+      return;
+    }
+
+    final Callback<T> callback = (Callback<T>) callbackMap.get(requestId).get();
+    if (args != null && args.length > 0) {
+      new Handler(Looper.getMainLooper()).post(new Runnable() {
+        @Override
+        public void run() {
+          callback.failure(RetrofitError.unexpectedError(requestId, args[0]));
+          callbackMap.remove(requestId);
+        }
+      });
+    } else {
+      new Handler(Looper.getMainLooper()).post(new Runnable() {
+        @Override
+        public void run() {
+          callback.success(typedResponse, rawResponse);
+          callbackMap.remove(requestId);
+        }
+      });
+    }
+  }
+
+  /**
+   * Shuts down the update thread.
+   */
+  public void shutdown() {
+    this.requestDispatcher.shutdown();
   }
 }
