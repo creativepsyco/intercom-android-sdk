@@ -1,5 +1,7 @@
 package intercom.piethis.com.intercomclientsdk.utils;
 
+import android.text.TextUtils;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -12,6 +14,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Collections;
 import java.util.List;
+
+import intercom.piethis.com.intercomclientsdk.internal.AppConstants;
 
 /**
  * User: msk
@@ -60,7 +64,9 @@ public class NetworkUtils {
    * @return a String composed of the IP
    */
   public static String getExternalIP() {
-    String useurl = "http://ipinfo.io/ip";
+    String useurl = TextUtils.isEmpty(AppConstants.getExternalIPHostUrl())
+        ? "http://ipinfo.io/ip"
+        : AppConstants.getExternalIPHostUrl();
     try {
       HttpClient httpclient = new DefaultHttpClient();
       HttpGet httpget = new HttpGet(useurl);
