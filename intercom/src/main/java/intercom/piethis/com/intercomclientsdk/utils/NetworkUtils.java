@@ -60,7 +60,7 @@ public class NetworkUtils {
    * @return a String composed of the IP
    */
   public static String getExternalIP() {
-    String useurl = "http://wtfismyip.com/text";
+    String useurl = "http://ipinfo.io/ip";
     try {
       HttpClient httpclient = new DefaultHttpClient();
       HttpGet httpget = new HttpGet(useurl);

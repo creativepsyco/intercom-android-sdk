@@ -1,3 +1,7 @@
+Version 0.2.4
+-------------
+* Change web address of where the client gets the external IP
+
 Version 0.2.3
 -------------
 * Add Custom attributes for app version and android version
